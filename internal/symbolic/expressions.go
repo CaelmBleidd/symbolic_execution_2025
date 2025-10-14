@@ -77,6 +77,24 @@ func (op LogicalOperator) String() string {
 	}
 }
 
+type UnaryOperator int
+
+const (
+	UNARY_MINUS UnaryOperator = iota // -x
+	UNARY_NOT                        // !x или not x
+)
+
+func (op UnaryOperator) String() string {
+	switch op {
+	case UNARY_MINUS:
+		return "-"
+	case UNARY_NOT:
+		return "!"
+	default:
+		return "unknown"
+	}
+}
+
 // SymbolicExpression - базовый интерфейс для всех символьных выражений
 type SymbolicExpression interface {
 	// Type возвращает тип выражения
@@ -284,4 +302,44 @@ func (lo *LogicalOperation) String() string {
 // Accept реализует Visitor pattern
 func (lo *LogicalOperation) Accept(visitor Visitor) interface{} {
 	return visitor.VisitLogicalOperation(lo)
+}
+
+// UnaryOperation представляет унарную операцию
+type UnaryOperation struct {
+	Operand  SymbolicExpression
+	Operator UnaryOperator
+}
+
+// NewUnaryOperation создаёт новую унарную операцию
+func NewUnaryOperation(operand SymbolicExpression, op UnaryOperator) *UnaryOperation {
+	switch op {
+	case UNARY_MINUS:
+		if operand.Type() != IntType {
+			panic("Унарный минус требует целочисленный операнд")
+		}
+	case UNARY_NOT:
+		if operand.Type() != BoolType {
+			panic("Логическое НЕ требует булев операнд")
+		}
+	}
+
+	return &UnaryOperation{
+		Operand:  operand,
+		Operator: op,
+	}
+}
+
+// Type возвращает тип операции
+func (uo *UnaryOperation) Type() ExpressionType {
+	return uo.Operand.Type()
+}
+
+// String возвращает строковое представление операции
+func (uo *UnaryOperation) String() string {
+	return fmt.Sprintf("%s%s", uo.Operator.String(), uo.Operand.String())
+}
+
+// Accept реализует Visitor pattern
+func (uo *UnaryOperation) Accept(visitor Visitor) interface{} {
+	return visitor.VisitUnaryOperation(uo)
 }
