@@ -1,19 +1,25 @@
 package main
 
 import (
-	"symbolic-execution-course/internal/memory"
-	"symbolic-execution-course/internal/symbolic"
+	"fmt"
+	"symbolic-execution-course/internal"
 )
 
 func main() {
-	var mem = memory.NewSymbolicMemory()
-	var array = mem.Allocate(symbolic.ArrayType)
+	source := `
+package main
 
-	mem.AssignToArray(array, 5, symbolic.NewIntConstant(10))
+func testFunction(x int) int {
+	if x > 0 {
+		return x * 2
+	} else {
+		return x * -1
+	}
+}
+`
 
-	var fromArray = mem.GetFromArray(array, 5)
-	println(fromArray)
-
-	var anotherFromArray = mem.GetFromArray(array, 10)
-	println(anotherFromArray)
+	result := internal.Analyse(source, "testFunction")
+	for _, interpreter := range result {
+		fmt.Println(interpreter)
+	}
 }
